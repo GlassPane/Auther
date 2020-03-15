@@ -1,0 +1,32 @@
+{
+    "schemaVersion": 1,
+    "id": "auther",
+    "name": "Auther",
+    "description": "Session (Re)Authentication System",
+    "license": "LGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "UpcraftLP",
+            "contact": {
+                "homepage": "https://twitter.com/UpcraftLP"
+            }
+        }
+    ],
+    "icon": "assets/auther/icon.png",
+    "environment": "client",
+    "version": "${version}",
+    "depends": {
+        "fabricloader": ">=0.7.2-"
+    },
+    "entrypoints": {
+        "client": [
+            "com.github.glasspane.auther.Auther"
+        ]
+    },
+    "mixins": [
+        {
+            "config": "mixins.auther.json",
+            "environment": "client"
+        }
+    ]
+}
