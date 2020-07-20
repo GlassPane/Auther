@@ -2,6 +2,7 @@ package io.github.glasspane.auther.screen;
 
 import io.github.glasspane.auther.Auther;
 import io.github.glasspane.auther.api.specialized.MojangAuthenticator;
+import joptsimple.internal.Strings;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -16,8 +17,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.TextColor;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
-
-import java.util.Arrays;
 
 @Environment(EnvType.CLIENT)
 public class AuthScreen extends Screen {
@@ -47,11 +46,7 @@ public class AuthScreen extends Screen {
         int y = this.height / 2 - 50;
         this.usernameField = this.addButton(new TextFieldWidget(this.textRenderer, x + 2, y + 2, 196, 20, this.usernameField, new TranslatableText("menu.auther.field.username")));
         this.passwordField = this.addButton(new TextFieldWidget(this.textRenderer, x + 2, y + 26, 196, 20, this.passwordField, new TranslatableText("menu.auther.field.password")));
-        this.passwordField.setRenderTextProvider((text, cursorPos) -> {
-            char[] array = new char[text.length()];
-            Arrays.fill(array, '*');
-            return new String(array);
-        });
+        this.passwordField.setRenderTextProvider((text, cursorPos) -> Strings.repeat('*', text.length()));
         this.addButton(new ButtonWidget(x, y + 48, 200, 20, new TranslatableText("menu.auther.button.login"), button -> {
             if (!this.usernameField.getText().trim().isEmpty() && !this.passwordField.getText().trim().isEmpty()) {
                 this.updating = true;
