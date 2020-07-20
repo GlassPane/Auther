@@ -5,6 +5,6 @@
   "menu.auther.status.session.updating": "updating",
   "menu.auther.status.session.valid": "Logged in!",
   "menu.auther.status.session.invalid": "Not Logged in!",
-
-  "log.auther.login.success": "successfully logged in as {}"
+  "log.auther.login.success": "successfully logged in as %s",
+  "log.auther.login.failure": "unable to login, keeping current session"
 }
