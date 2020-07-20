@@ -1,7 +1,6 @@
 package com.github.glasspane.auther.impl;
 
-import com.github.glasspane.auther.api.specialized.MinecraftAuthenticator;
-import com.github.glasspane.auther.mixin.SessionAccessor;
+import com.github.glasspane.auther.api.specialized.MojangAuthenticator;
 import com.mojang.authlib.Agent;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.UserType;
@@ -13,32 +12,33 @@ import com.mojang.util.UUIDTypeAdapter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Session;
 import net.minecraft.entity.player.PlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public final class MinecraftAuthenticatorImpl implements MinecraftAuthenticator {
+public final class MojangAuthenticatorImpl implements MojangAuthenticator {
 
     private static final Executor AUTH_THREAD = Executors.newSingleThreadExecutor(r -> new Thread(r, "Auther Authentication Thread"));
-    private static volatile MinecraftAuthenticatorImpl INSTANCE = null;
+    private static volatile MojangAuthenticatorImpl INSTANCE = null;
     private final String uniqueToken = UUIDTypeAdapter.fromUUID(UUID.randomUUID());
     private final YggdrasilAuthenticationService authenticationService = new YggdrasilAuthenticationService(MinecraftClient.getInstance().getNetworkProxy(), uniqueToken);
     private final MinecraftSessionService sessionService = authenticationService.createMinecraftSessionService();
 
-    private MinecraftAuthenticatorImpl() {
+    private MojangAuthenticatorImpl() {
         if(INSTANCE != null) {
             throw new IllegalStateException("Can only create one instance!");
         }
     }
 
-    public static MinecraftAuthenticator getInstance() {
+    public static MojangAuthenticator getInstance() {
         if(INSTANCE != null) {
             return INSTANCE;
         }
-        synchronized (MinecraftAuthenticatorImpl.class) {
-            return new MinecraftAuthenticatorImpl();
+        synchronized (MojangAuthenticatorImpl.class) {
+            return new MojangAuthenticatorImpl();
         }
     }
 
@@ -75,15 +75,7 @@ public final class MinecraftAuthenticatorImpl implements MinecraftAuthenticator 
             finally {
                 userAuthentication.logOut();
             }
-        }, AUTH_THREAD).thenApplyAsync(this::setSession, MinecraftClient.getInstance());
-    }
-
-    /**
-     * internal bridge method for mixin access
-     */
-    private Session setSession(Session session) {
-        ((SessionAccessor) MinecraftClient.getInstance()).setSession(session);
-        return session;
+        }, AUTH_THREAD);
     }
 
     @Override
@@ -100,7 +92,8 @@ public final class MinecraftAuthenticatorImpl implements MinecraftAuthenticator 
         return CompletableFuture.supplyAsync(() -> {
             try {
                 sessionService.joinServer(profile, token, randomID);
-                return sessionService.hasJoinedServer(profile, randomID, null).isComplete();
+                @Nullable GameProfile gp = sessionService.hasJoinedServer(profile, randomID, null);
+                return gp != null && gp.isComplete();
             }
             catch (AuthenticationException e) {
                 throw new RuntimeException("unable to validate token", e);
@@ -111,6 +104,6 @@ public final class MinecraftAuthenticatorImpl implements MinecraftAuthenticator 
     @Override
     public final CompletableFuture<Session> offlineLogin(String username) {
         String id = UUIDTypeAdapter.fromUUID(PlayerEntity.getOfflinePlayerUuid(username));
-        return CompletableFuture.completedFuture(new Session(username, id, "invalid", UserType.LEGACY.getName())).thenApplyAsync(this::setSession, MinecraftClient.getInstance());
+        return CompletableFuture.completedFuture(new Session(username, id, "invalid", UserType.LEGACY.getName()));
     }
 }

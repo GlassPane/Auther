@@ -5,13 +5,13 @@ import net.minecraft.client.util.Session;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface MinecraftAuthenticator extends PasswordAuthenticator<Session> {
+public interface MojangAuthenticator extends PasswordAuthenticator<Session> {
 
     /**
      * verifies the credentials against Mojang's session server and updates the current Session.
      *
-     * @param username the mojang account username
-     * @param password the mojang account password
+     * @param username the Mojang Account username
+     * @param password the Mojang Account password
      */
     @Override
     CompletableFuture<Session> login(String username, String password);

@@ -8,6 +8,13 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 
 //TODO make oauth widget
 @Environment(EnvType.CLIENT)
@@ -20,24 +27,28 @@ public class MinecraftPasswordAuthWidget extends AbstractButtonWidget {
     private final ButtonWidget loginButton;
     private final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
     private int ticks = 0;
-    private boolean loggedIn;
     private boolean updating;
-    private String displayText;
+    private MutableText displayText;
 
-    public MinecraftPasswordAuthWidget(int x, int y, String label) {
+    public MinecraftPasswordAuthWidget(int x, int y, Text label) {
         this(x, y, 200, 80, label);
     }
 
-    public MinecraftPasswordAuthWidget(int x, int y, int width, int height, String string_1) {
-        super(x, y, width, height, string_1);
-        this.usernameField = new TextFieldWidget(this.textRenderer, x + 2, y + 2, width - 4, 20, "Username");
-        this.passwordField = new TextFieldWidget(this.textRenderer, x + 2, y + 26, width - 4, 20, "Password");
-        this.passwordField.setRenderTextProvider((text, cursorPos) -> new String(new char[text.length()]).replace("\0", "*"));
-        this.loginButton = new ButtonWidget(x, y + 48, width, 20, "Login", button -> {
+    public MinecraftPasswordAuthWidget(int x, int y, int width, int height, Text label) {
+        super(x, y, width, height, label);
+        this.usernameField = new TextFieldWidget(this.textRenderer, x + 2, y + 2, width - 4, 20, new TranslatableText("menu.auther.username_field"));
+        this.passwordField = new TextFieldWidget(this.textRenderer, x + 2, y + 26, width - 4, 20, new TranslatableText("menu.auther.password_field"));
+        this.passwordField.setRenderTextProvider((text, cursorPos) -> text.replace("\0", "*"));
+        this.loginButton = new ButtonWidget(x, y + 48, width, 20, new TranslatableText("menu.auther.login_button"), button -> {
             if(!this.usernameField.getText().trim().isEmpty() && !this.passwordField.getText().trim().isEmpty()) {
                 this.updating = true;
-                Auther.getMinecraftAuthenticator().login(usernameField.getText(), passwordField.getText()).thenAccept(session -> {
-                    Auther.getLogger().info("successfully logged in as {}", session.getUsername());
+                Auther.getMinecraftAuthenticator().login(usernameField.getText(), passwordField.getText())
+                        .thenApplyAsync(session -> {
+                            Auther.setMinecraftSession(session);
+                            return session;
+                        }, MinecraftClient.getInstance())
+                        .thenAccept(session -> {
+                    Auther.getLogger().info(I18n.translate("log.auther.login.success"), session.getUsername());
                     this.checkLogin();
                 });
             }
@@ -50,53 +61,49 @@ public class MinecraftPasswordAuthWidget extends AbstractButtonWidget {
      */
     private void checkLogin() {
         this.updating = true;
-        this.loggedIn = false;
-        this.displayText = "updating";
+        this.displayText = new TranslatableText("menu.auther.status.updating").styled(style -> style.withColor(Formatting.YELLOW));
         Auther.getMinecraftAuthenticator().isAuthenticated().thenAccept(isLoggedIn -> {
             this.updating = false;
             if(isLoggedIn) {
-                this.loggedIn = true;
-                this.displayText = "Logged in!";
+                this.displayText = new TranslatableText("menu.auther.status.session_valid").styled(style -> style.withColor(TextColor.fromRgb(LOGGED_IN_COLOR)));
             }
             else {
-                this.displayText = "Not Logged in!";
+                this.displayText = new TranslatableText("menu.auther.status.session_invalid").styled(style -> style.withColor(TextColor.fromRgb(NOT_LOGGED_IN_COLOR)));
             }
         });
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float deltaTime) {
-        fill(this.x, this.y, this.x + this.width, this.y + this.height, 0x7F000000);
-        this.usernameField.render(mouseX, mouseY, deltaTime);
-        this.passwordField.render(mouseX, mouseY, deltaTime);
-        this.loginButton.render(mouseX, mouseY, deltaTime);
-        String text = this.displayText;
+    public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float deltaTime) {
+        fill(matrices, this.x, this.y, this.x + this.width, this.y + this.height, 0x7F000000);
+        this.usernameField.render(matrices, mouseX, mouseY, deltaTime);
+        this.passwordField.render(matrices, mouseX, mouseY, deltaTime);
+        this.loginButton.render(matrices, mouseX, mouseY, deltaTime);
+        MutableText text = this.displayText.shallowCopy();
         if(this.updating) {
             int dots = this.ticks / 5 % 4;
-            StringBuilder sb = new StringBuilder(text);
             for(int i = 1; i <= dots; i++) {
-                sb.append(" .");
+                text.append(" .");
             }
-            text = sb.toString();
         }
-        int textX = this.x + (this.width - this.textRenderer.getStringWidth(this.displayText)) / 2;
+        int textX = this.x + this.width / 2;
         int textY = this.y + this.height - 10;
-        this.drawString(this.textRenderer, text, textX, textY, !this.updating && this.loggedIn ? LOGGED_IN_COLOR : NOT_LOGGED_IN_COLOR);
+        this.drawCenteredText(matrices, textRenderer, text, textX, textY, 0xFFFFFF);
     }
 
     @Override
-    public boolean mouseClicked(double double_1, double double_2, int int_1) {
-        return this.usernameField.mouseClicked(double_1, double_2, int_1) | this.passwordField.mouseClicked(double_1, double_2, int_1) | this.loginButton.mouseClicked(double_1, double_2, int_1);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return this.usernameField.mouseClicked(mouseX, mouseY, button) | this.passwordField.mouseClicked(mouseX, mouseY, button) | this.loginButton.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean keyPressed(int int_1, int int_2, int int_3) {
-        return this.usernameField.keyPressed(int_1, int_2, int_3) | this.passwordField.keyPressed(int_1, int_2, int_3);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        return this.usernameField.keyPressed(keyCode, scanCode, modifiers) | this.passwordField.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
-    public boolean charTyped(char char_1, int int_1) {
-        return this.usernameField.charTyped(char_1, int_1) | this.passwordField.charTyped(char_1, int_1);
+    public boolean charTyped(char chr, int keyCode) {
+        return this.usernameField.charTyped(chr, keyCode) | this.passwordField.charTyped(chr, keyCode);
     }
 
     public void tick() {

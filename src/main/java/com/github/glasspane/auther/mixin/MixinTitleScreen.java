@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.NarratorManager;
+import net.minecraft.text.LiteralText;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,6 +21,6 @@ public abstract class MixinTitleScreen extends Screen {
 
     @Inject(method = "initWidgetsNormal", at = @At("RETURN"))
     private void addAuthButton(int xButtonMargin, int yButtonMargin, CallbackInfo ci) {
-        this.addButton(new ButtonWidget(this.width / 2 - 124, yButtonMargin + 72 + 12 + 22, 20, 20, "Auth", button -> this.minecraft.openScreen(new AuthScreen(this))));
+        this.addButton(new ButtonWidget(this.width / 2 - 124, yButtonMargin + 72 + 12 + 22, 20, 20, new LiteralText("Auth"), button -> this.client.openScreen(new AuthScreen(this))));
     }
 }

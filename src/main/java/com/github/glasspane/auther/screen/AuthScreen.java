@@ -4,6 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.NarratorManager;
+import net.minecraft.client.util.math.MatrixStack;
 
 @Environment(EnvType.CLIENT)
 public class AuthScreen extends Screen {
@@ -18,7 +19,7 @@ public class AuthScreen extends Screen {
 
     @Override
     protected void init() {
-        this.authWidget = this.addButton(new MinecraftPasswordAuthWidget(this.width / 2 - 100, this.height / 2 - 50, ""));
+        this.authWidget = this.addButton(new MinecraftPasswordAuthWidget(this.width / 2 - 100, this.height / 2 - 50, NarratorManager.EMPTY));
     }
 
     @Override
@@ -28,13 +29,13 @@ public class AuthScreen extends Screen {
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float deltaTime) {
-        this.renderBackground();
-        super.render(mouseX, mouseY, deltaTime);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        this.renderBackground(matrices);
+        super.render(matrices, mouseX, mouseY, delta);
     }
 
     @Override
     public void onClose() {
-        this.minecraft.openScreen(parent);
+        this.client.openScreen(parent);
     }
 }
