@@ -1,10 +1,10 @@
 {
-  "menu.auther.username_field": "Username",
-  "menu.auther.password_field": "Password",
-  "menu.auther.login_button": "Login",
-  "menu.auther.status.updating": "updating",
-  "menu.auther.status.session_valid": "Logged in!",
-  "menu.auther.status.session_invalid": "Not Logged in!",
+  "menu.auther.field.username": "Username",
+  "menu.auther.field.password": "Password",
+  "menu.auther.button.login": "Login",
+  "menu.auther.status.session.updating": "updating",
+  "menu.auther.status.session.valid": "Logged in!",
+  "menu.auther.status.session.invalid": "Not Logged in!",
 
   "log.auther.login.success": "successfully logged in as {}"
 }

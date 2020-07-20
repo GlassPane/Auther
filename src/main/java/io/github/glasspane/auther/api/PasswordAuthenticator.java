@@ -1,4 +1,4 @@
-package com.github.glasspane.auther.api;
+package io.github.glasspane.auther.api;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;

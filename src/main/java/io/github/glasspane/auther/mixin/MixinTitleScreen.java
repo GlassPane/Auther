@@ -1,6 +1,6 @@
-package com.github.glasspane.auther.mixin;
+package io.github.glasspane.auther.mixin;
 
-import com.github.glasspane.auther.screen.AuthScreen;
+import io.github.glasspane.auther.screen.AuthScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;

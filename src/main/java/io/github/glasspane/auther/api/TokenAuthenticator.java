@@ -1,4 +1,4 @@
-package com.github.glasspane.auther.api;
+package io.github.glasspane.auther.api;
 
 import org.jetbrains.annotations.ApiStatus;
 

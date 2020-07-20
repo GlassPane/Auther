@@ -18,11 +18,6 @@
     "depends": {
         "fabricloader": ">=0.7.2-"
     },
-    "entrypoints": {
-        "client": [
-            "com.github.glasspane.auther.Auther"
-        ]
-    },
     "mixins": [
         {
             "config": "mixins.auther.json",

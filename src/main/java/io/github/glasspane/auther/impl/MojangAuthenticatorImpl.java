@@ -1,6 +1,5 @@
-package com.github.glasspane.auther.impl;
+package io.github.glasspane.auther.impl;
 
-import com.github.glasspane.auther.api.specialized.MojangAuthenticator;
 import com.mojang.authlib.Agent;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.UserType;
@@ -9,6 +8,7 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
 import com.mojang.util.UUIDTypeAdapter;
+import io.github.glasspane.auther.api.specialized.MojangAuthenticator;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Session;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,24 +22,17 @@ import java.util.concurrent.Executors;
 public final class MojangAuthenticatorImpl implements MojangAuthenticator {
 
     private static final Executor AUTH_THREAD = Executors.newSingleThreadExecutor(r -> new Thread(r, "Auther Authentication Thread"));
-    private static volatile MojangAuthenticatorImpl INSTANCE = null;
+    private static final MojangAuthenticatorImpl INSTANCE = new MojangAuthenticatorImpl();
     private final String uniqueToken = UUIDTypeAdapter.fromUUID(UUID.randomUUID());
     private final YggdrasilAuthenticationService authenticationService = new YggdrasilAuthenticationService(MinecraftClient.getInstance().getNetworkProxy(), uniqueToken);
     private final MinecraftSessionService sessionService = authenticationService.createMinecraftSessionService();
 
     private MojangAuthenticatorImpl() {
-        if(INSTANCE != null) {
-            throw new IllegalStateException("Can only create one instance!");
-        }
+        //NO-OP
     }
 
     public static MojangAuthenticator getInstance() {
-        if(INSTANCE != null) {
-            return INSTANCE;
-        }
-        synchronized (MojangAuthenticatorImpl.class) {
-            return new MojangAuthenticatorImpl();
-        }
+        return INSTANCE;
     }
 
     /**
@@ -68,19 +61,12 @@ public final class MojangAuthenticatorImpl implements MojangAuthenticator {
                 String accessToken = userAuthentication.getAuthenticatedToken();
                 String sessionType = userAuthentication.getUserType().getName();
                 return new Session(uName, UUIDTypeAdapter.fromUUID(uuid), accessToken, sessionType);
-            }
-            catch (AuthenticationException e) {
+            } catch (AuthenticationException e) {
                 throw new RuntimeException(e);
-            }
-            finally {
+            } finally {
                 userAuthentication.logOut();
             }
         }, AUTH_THREAD);
-    }
-
-    @Override
-    public Session getUserInformation() {
-        return MinecraftClient.getInstance().getSession();
     }
 
     @Override
@@ -94,11 +80,15 @@ public final class MojangAuthenticatorImpl implements MojangAuthenticator {
                 sessionService.joinServer(profile, token, randomID);
                 @Nullable GameProfile gp = sessionService.hasJoinedServer(profile, randomID, null);
                 return gp != null && gp.isComplete();
-            }
-            catch (AuthenticationException e) {
+            } catch (AuthenticationException e) {
                 throw new RuntimeException("unable to validate token", e);
             }
         }, AUTH_THREAD).exceptionally(throwable -> false);
+    }
+
+    @Override
+    public Session getUserInformation() {
+        return MinecraftClient.getInstance().getSession();
     }
 
     @Override

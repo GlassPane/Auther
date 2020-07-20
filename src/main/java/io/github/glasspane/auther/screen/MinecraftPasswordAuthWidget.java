@@ -1,6 +1,7 @@
-package com.github.glasspane.auther.screen;
+package io.github.glasspane.auther.screen;
 
-import com.github.glasspane.auther.Auther;
+import io.github.glasspane.auther.Auther;
+import io.github.glasspane.auther.api.specialized.MojangAuthenticator;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -36,13 +37,13 @@ public class MinecraftPasswordAuthWidget extends AbstractButtonWidget {
 
     public MinecraftPasswordAuthWidget(int x, int y, int width, int height, Text label) {
         super(x, y, width, height, label);
-        this.usernameField = new TextFieldWidget(this.textRenderer, x + 2, y + 2, width - 4, 20, new TranslatableText("menu.auther.username_field"));
-        this.passwordField = new TextFieldWidget(this.textRenderer, x + 2, y + 26, width - 4, 20, new TranslatableText("menu.auther.password_field"));
+        this.usernameField = new TextFieldWidget(this.textRenderer, x + 2, y + 2, width - 4, 20, new TranslatableText("menu.auther.field.username"));
+        this.passwordField = new TextFieldWidget(this.textRenderer, x + 2, y + 26, width - 4, 20, new TranslatableText("menu.auther.field.password"));
         this.passwordField.setRenderTextProvider((text, cursorPos) -> text.replace("\0", "*"));
-        this.loginButton = new ButtonWidget(x, y + 48, width, 20, new TranslatableText("menu.auther.login_button"), button -> {
+        this.loginButton = new ButtonWidget(x, y + 48, width, 20, new TranslatableText("menu.auther.button.login"), button -> {
             if(!this.usernameField.getText().trim().isEmpty() && !this.passwordField.getText().trim().isEmpty()) {
                 this.updating = true;
-                Auther.getMinecraftAuthenticator().login(usernameField.getText(), passwordField.getText())
+                MojangAuthenticator.getInstance().login(usernameField.getText(), passwordField.getText())
                         .thenApplyAsync(session -> {
                             Auther.setMinecraftSession(session);
                             return session;
@@ -61,14 +62,14 @@ public class MinecraftPasswordAuthWidget extends AbstractButtonWidget {
      */
     private void checkLogin() {
         this.updating = true;
-        this.displayText = new TranslatableText("menu.auther.status.updating").styled(style -> style.withColor(Formatting.YELLOW));
-        Auther.getMinecraftAuthenticator().isAuthenticated().thenAccept(isLoggedIn -> {
+        this.displayText = new TranslatableText("menu.auther.status.session.updating").styled(style -> style.withColor(Formatting.YELLOW));
+        MojangAuthenticator.getInstance().isAuthenticated().thenAccept(isLoggedIn -> {
             this.updating = false;
             if(isLoggedIn) {
-                this.displayText = new TranslatableText("menu.auther.status.session_valid").styled(style -> style.withColor(TextColor.fromRgb(LOGGED_IN_COLOR)));
+                this.displayText = new TranslatableText("menu.auther.status.session.valid").styled(style -> style.withColor(TextColor.fromRgb(LOGGED_IN_COLOR)));
             }
             else {
-                this.displayText = new TranslatableText("menu.auther.status.session_invalid").styled(style -> style.withColor(TextColor.fromRgb(NOT_LOGGED_IN_COLOR)));
+                this.displayText = new TranslatableText("menu.auther.status.session.invalid").styled(style -> style.withColor(TextColor.fromRgb(NOT_LOGGED_IN_COLOR)));
             }
         });
     }

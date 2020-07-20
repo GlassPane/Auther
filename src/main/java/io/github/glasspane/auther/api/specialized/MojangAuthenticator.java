@@ -1,11 +1,16 @@
-package com.github.glasspane.auther.api.specialized;
+package io.github.glasspane.auther.api.specialized;
 
-import com.github.glasspane.auther.api.PasswordAuthenticator;
+import io.github.glasspane.auther.api.PasswordAuthenticator;
+import io.github.glasspane.auther.impl.MojangAuthenticatorImpl;
 import net.minecraft.client.util.Session;
 
 import java.util.concurrent.CompletableFuture;
 
 public interface MojangAuthenticator extends PasswordAuthenticator<Session> {
+
+    static MojangAuthenticator getInstance() {
+        return MojangAuthenticatorImpl.getInstance();
+    }
 
     /**
      * verifies the credentials against Mojang's session server and updates the current Session.

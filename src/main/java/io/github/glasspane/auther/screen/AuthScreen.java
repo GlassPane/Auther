@@ -1,4 +1,4 @@
-package com.github.glasspane.auther.screen;
+package io.github.glasspane.auther.screen;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

@@ -1,4 +1,4 @@
-package com.github.glasspane.auther.mixin;
+package io.github.glasspane.auther.mixin;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Session;
