@@ -28,6 +28,8 @@ dependencies {
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     compileOnly "org.jetbrains:annotations:19.0.0"
 
+    modImplementation include(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
+
 }
 
 processResources {
